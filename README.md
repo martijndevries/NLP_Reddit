@@ -32,12 +32,20 @@ This repository consists of the following:
     <li> The slides for the project presentation are in the file <code>project3_martijn_slides.pdf</code> </li>
 </ul>
 
-## Data Dictionary: Posts
+## Data Dictionaries
+
+### Posts model
 
 |Feature|Type|Dataset|Description|
 |---|---|---|---|
-|Title | string | Reddit | The title of the subreddit post. Typically the headline of a news article
-|num_comments| int | Reddit | the number of comments below each post 
-|domain| int | Extracted from pushshift | 
-|Subreddit| category | Pushshift| ***Target variable***- The subreddit the post is from: r/conservative or r/politics
+|Title | string | Reddit data | The title of the subreddit post. Typically the headline of a news article
+|num_comments| int | Reddit data| the number of comments below each post 
+|domain| category | Extracted from Reddit data| the domain name the post links to, eg. typically news sites like 'politico' or 'nytimes'
+|Subreddit| category | Reddit data  | ***Target variable***- The subreddit the post is from: r/conservative or r/politics
 
+### Comments model
+
+|Feature|Type|Dataset|Description|
+|---|---|---|---|
+|Title | string | Reddit data | The comment text | 
+|Subreddit| category | Reddit data  | ***Target variable***- The subreddit the post is from: r/conservative or r/politics |
