@@ -92,7 +92,7 @@ When just using monograms (single words), we can see that we could limit the max
 
 The best-performing model to classify posts is a Stacking Classifier, with a Logistic Regression, Random Forest, and Multinomial Naive Bayes as base estimators and a Logistic Regression as the final estimator. The sklearn diagram below shows the full diagram.
 
- <img src="./figures/posts_model_sklearn_pipe.png" height="100px"/>
+ <img src="./figures/posts_model_sklearn_pipe.png" height="200px"/>
 
 ## Model Insights
 
