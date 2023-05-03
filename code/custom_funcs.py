@@ -8,14 +8,32 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 class Tfidf_BigramReducer(BaseEstimator, TransformerMixin):
     """
-    Transformer class that wraps around TfidfVectorizer, and postprocesses the output.
-    The idea is to reduce the number of bigrams 
-    and only keep the monograms and the 'bf' most frequent bigrams. The other bigrams are sliced out
+    A class that wraps around sklearn's TfidfVectorizer with ngram_range=(1,2), and subsequently slices out the bigrams with low overall importance
+
+    Attributes
+    ----------
+    bf (float or int) : 
+        the 'bigram fraction' to be kept. If int, an absolute number. If float, a fraction of the total nr of bigrams
+    inds_to_keep (list):
+        the column indexes to keep in the vectorized matrix. Calculated when the fit method is called 
+    all the TfidfVectorizer hyperparameters: 
+        these are passed straight through to a TfidfVectorizer object, which is created when this class is instantiated
+
+    Methods
+    -------
+    fit(X, y=None):
+        Fits and transforms input data with TfidfVectorizer,then finds the bigrams with highest summed tfidfvalue over all rows. Calculates which column indices should be kept
+    transform(X, y=None):
+        transformed the data TfidfVectorizer, then uses the inds_to_keep attribute to slice out all the bigrams with low tfidf value
+    get_feature_names_out(X):
+        returns the feature names after slicing out bigrams
+
+    inherits methods from Transformer Mixin (fit_transform) and BaseEstimator
     """
     def __init__(self, bf=0.9, stop_words=None, strip_accents=None, max_features=None, tokenizer=None, min_df=1, max_df=0.8, preprocessor=None):
-        
-        #nr of most frequent bigrams to keep. Can either be an int > 1 (absolute nr), or a float =<1 (percentage)
-        self.bf = bf 
+        """
+        Constructs the 'bigram frequency' attribute, and creates a TfidfVectorizer object with all the hyperparameters passed through
+        """
         
         #tfidf hyperpars
         self.max_df = max_df
@@ -26,19 +44,16 @@ class Tfidf_BigramReducer(BaseEstimator, TransformerMixin):
         self.tokenizer = tokenizer
         self.max_features = max_features
         
-        #instantiate TfidfVectorizer object
+        #create TfidfVectorizer object
         self.tfidf = TfidfVectorizer(stop_words=self.stop_words, min_df=self.min_df, max_df=self.max_df, strip_accents=self.strip_accents, \
                             ngram_range=(1,2), max_features=self.max_features, tokenizer=self.tokenizer, preprocessor=self.preprocessor)
 
     def fit(self, X, y=None):
         """
-        .fit() first calls the TfidfVectorizer instantiated when this object was instantiated. Then finds out which columns to keep 
-        and which ones to slice out of the matrix. I'm keeping everything in sparse matrix dtype for efficiency
+        Fits the data to TfidfVectorizer, then uses the tfdidf values to obtain the indexes of the columns to keep
         """
         
         X_trans = self.tfidf.fit_transform(X)
-
-        #get features from tfidf object
         self.features = self.tfidf.get_feature_names_out()
         
         #Sum over all rows to find most frequently occuring n-grams
@@ -62,11 +77,17 @@ class Tfidf_BigramReducer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, y=None):
+        """
+        Transforms input data by slicing, using the self.inds_to_keep attribute
+        """
         X_trans = self.tfidf.transform(X)
         return X_trans[:,self.inds_to_keep]
-        
-    #Need this function so I know which features are actually fit at the end
+    
     def get_feature_names_out(self, X):
+        """
+        Returns feature names after slicing out bigrams. This function call needs this exact name so it works together with the get_feature_names_out() method of ColumnTransformer
+        Note that in older versions of sklearn this method was called get_feature_names, in which case this method name needs to be changed
+        """
         return self.features[self.inds_to_keep]
         
 # Custom preprocessor

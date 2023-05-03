@@ -32,20 +32,65 @@ This repository consists of the following:
     <li> The slides for the project presentation are in the file <code>project3_martijn_slides.pdf</code> </li>
 </ul>
 
+## Subreddits Overview:
+
+<a href=https://www.reddit.com/r/politics/>r/politics</a> is Reddit's biggest politically-themed subreddit, with 8.3 million subscribers as of May 2023. It is focused on the discussion of US political news. The vast majority of posts on r/politics are links to news articles, with the post title being the article headline. The article is typically discussed by reddit users in the comments. Although the subreddit is not officially pro-Democratic or pro-Republican party, because it is the mainstream subreddit and because the general userbase of Reddit skews younger and more Democratic/left-wing, it has a fairly strong bent to the Democratic/left-wing side of the political aisle.
+
+<a href=https://www.reddit.com/r/conservative/>r/conservative</a> is Reddit's biggest conservative-specific political subreddit, with 1 million subscribers as of May 2023. It focuses on discussing US politics news specifically from a conservative perspective. Just like on r/politics, most posts are links to news articles, which are then discussed by users in the comments. This subreddit is more restrictive in who is allowed to post or comment. Some of the posts are for 'flaired users only', which indicates that only regular commentors on the subreddit are allowed to comment.
+
 ## Data Dictionaries
+The data dictionaries for the best-performing models for posts and titles are listed below
 
 ### Posts model
 
 |Feature|Type|Dataset|Description|
 |---|---|---|---|
-|Title | string | Reddit data | The title of the subreddit post. Typically the headline of a news article
+|title | string | Reddit data | The title of the subreddit post. Typically the headline of a news article
 |num_comments| int | Reddit data| the number of comments below each post 
 |domain| category | Extracted from Reddit data| the domain name the post links to, eg. typically news sites like 'politico' or 'nytimes'
-|Subreddit| category | Reddit data  | ***Target variable***- The subreddit the post is from: r/conservative or r/politics
+|subreddit| category | Reddit data  | ***Target variable***- Encoded as 0: r/conservative and 1: r/politics |
 
 ### Comments model
 
 |Feature|Type|Dataset|Description|
 |---|---|---|---|
-|Title | string | Reddit data | The comment text | 
-|Subreddit| category | Reddit data  | ***Target variable***- The subreddit the post is from: r/conservative or r/politics |
+|title | string | Reddit data | The comment text | 
+|score | int | Reddit data | The comment score |
+|word_length | int | extracted from Reddit data | The comment word length |
+|freq_poster | category |  extracted from Reddit data | Whether the poster has made more than 15 posts in 30 days |
+|sent_label | category | extracted from Reddit data  | Sentiment label of comment, using roBERTa sentiment analysis |
+|subreddit| category | Reddit data  | ***Target variable***-  Encoded as 0: r/conservative and 1: r/politics  |
+
+## Data Collection
+
+I used the Pushshift API, together with the Python library 'requests' to collect the relevant data. As specified in the problem statement, I collected data from the month leading up to the 2022 Midterms elections. I made a separate request for each day, for each subreddit, and for both submissions and comments. I set the maximum size of posts/comments to 1000 per request. Fewer than 1000 posts are made on both subreddits, and I collected 20421 posts in total over a time period of 31 days. For comments, I obtained near the maximum of 1000 comments per request, and I obtained 61911 comments over a time period of 31 days. The raw data for both posts and comments are saved as pandas dataframes in the <code>./data</code> folder.
+
+## Data Cleaning and EDA
+
+### Posts
+
+One thing that is obvious pretty quickly looking at the posts data is that more than 99% do not contain any useful information in the body (called the 'selftext'). These are often either empty, or removed. Because of this, I did not look at the selftexts and only focused on the title and some additional information for this model.
+
+Because the post titles are required to be the same as the article headline, and because the same article is sometimes posted multiple times, I removed duplicate titles within the same subreddit. I also removed titles that included subreddit names, like r/politics or r/conservative. Another issue I noticed is that some titles are in other languages or even in other scripts. I attempted to filter out these titles by attempting to convert titles to ASCII - this only works for a select number of characters, and so if the title contains eg. a Chinese symbol, then the ascii conversion throws an error. This appears to work reasonably well in filtering out titles in non-latin scripts or that contain symbols not native to English (like the Turkish ı). 
+
+I also looked at how predictive other pieces of information might be for the model. The image below shows the comment distribution under each post for both subreddits:
+
+<img src="./figures/post_num_comments.png" style="float: left; margin: 20px; height: 400px">
+
+
+## Overall Summary and Conclusions
+Using Pushshift API, I collected data from two different subreddits, r/politics and r/conservative, from the month leading up to the 2022 midterms (October 2022). I tested out different classification models in order to classify 1) the post titles, and 2) the comments of either subreddit. After data cleaning, I was left with about 19,000 post titles (53/47 split for r/conservative - r/politics, respectively), and 48,000 comments (47/53 split). 
+
+For the titles model, other than the title I included two additional pieces of information: the number of comments on each post, and the domain name that the post linked to. The final model that I used consists of a Stacking Classifier, using Logistic Regression, Random Forest, and Multinomial Naive Bayes as the base estimators. and a Logistic Regression as the final estimator. The final accuracy on the testing data is <b>88.1%</b>. Analysis of the feature importances indicates that the domain names are highly predictive and help improve the accuracy score a lot. This makes a lot of sense given the fact that the US political media system is highly polarized, and certain websites are only read by conservatives while others are highly avoided by conservatives, and vice versa.
+
+For the comments model, I included several other pieces of information: the score of the comment, the word length, whether the commenter is a frequent poster or not, and the sentiment of the comment (Negative/neutral/positive, using sentiment analysis with the roBERTa model). The best-performing model was again a Stacking classifier with the same estimator components as for the titles model. The final accuracy on the testing data is <b>65.4%</b>. Unlike with the titles model, it appears that none of the additional non-language features I added improve the accuracy by very much. One of the main reason for misclassification appears to be the fact that many comments are just too short for the model to be able to classify them with much certainty.
+
+The base models that make up the Stacking Classifier allow us to look into which features add predictive power to the model, which means we can look at the language that is used and the degree to which this determines whether the post or comment comes from either subreddit. Although a full analysis of language use is beyond the scope of this project, using the visualizations in this notebook we can point to some directions that might warrant further exploration or analysis: 
+
+1) <b>Abortion</b>: discussions about this topic have greatly flared up since the Dobbs v Jackson decision by the Supreme Court in June 2022. We can see this discussion show up in different ways in the two subreddits: the phrase 'pro life' appears to be highly predictive of r/conservative, which makes sense as this moniker is often used by anti-abortionists to describe themselves. On the r/politics side, the terms 'Supreme Court' and 'abortion' show up as important features
+
+2) <b>Presidents</b>: it appears that 'Biden' is much more mentioned on the conservative side (see also 'geriatric joe') while Trump (and related terms like 'mar lago') is more often mentioned on r/politics 
+
+3) <b>The pandemic</b>: it appears that on r/politics, COVID and the pandemic may not have been as important in the discourse as on r/conservative. On r/conservative, we can see terms like 'covid' and 'vaccine' as important features, but equivalents are not directly obvious on r/politics
+
+4) <b>The other side of the political aisle</b>: both side use certain terms to describe the other side. On r/conservative, we see highly predictive features such as 'left', 'leftists', while r/politics uses terms like 'right wing' and 'far right'.
