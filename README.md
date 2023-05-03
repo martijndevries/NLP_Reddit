@@ -65,29 +65,36 @@ The data dictionaries for the best-performing models for posts and titles are li
 
 I used the Pushshift API, together with the Python library 'requests' to collect the relevant data. As specified in the problem statement, I collected data from the month leading up to the 2022 Midterms elections. I made a separate request for each day, for each subreddit, and for both submissions and comments. I set the maximum size of posts/comments to 1000 per request. Fewer than 1000 posts are made on both subreddits, and I collected 20421 posts in total over a time period of 31 days. For comments, I obtained near the maximum of 1000 comments per request, and I obtained 61911 comments over a time period of 31 days. The raw data for both posts and comments are saved as pandas dataframes in the <code>./data</code> folder.
 
-## Data Cleaning and EDA
+## Cleaning and EDA
+
+After filtering out duplicates, non-english posts, posts by bots or moderators etc, I did some basic EDA to figure out which features might be useful in the model.
 
 ### Posts
 
-One thing that is obvious pretty quickly looking at the posts data is that more than 99% do not contain any useful information in the body (called the 'selftext'). These are often either empty, or removed. Because of this, I did not look at the selftexts and only focused on the title and some additional information for this model.
+In the posts data we obtained, more than 99% do not contain any useful information in the body (called the 'selftext'). These are often either empty, or removed. Because of this, I did not look at the selftexts and only focused on the title and some additional information for this model.
 
-Because the post titles are required to be the same as the article headline, and because the same article is sometimes posted multiple times, I removed duplicate titles within the same subreddit. I also removed titles that included subreddit names, like r/politics or r/conservative. Another issue I noticed is that some titles are in other languages or even in other scripts. I attempted to filter out these titles by attempting to convert titles to ASCII - this only works for a select number of characters, and so if the title contains eg. a Chinese symbol, then the ascii conversion throws an error. This appears to work reasonably well in filtering out titles in non-latin scripts or that contain symbols not native to English (like the Turkish dotless ı). 
+I also looked at additional features beyond just the title. The image below shows the comment distribution under each post for both subreddits, which I ended up adding as a feature in the model:
 
-I also looked at how predictive other pieces of information might be for the model. The image below shows the comment distribution under each post for both subreddits:
+<img src="./figures/posts_num_comments.png" style="float: left; margin: 20px; height: 500px">
 
-<img src="./figures/post_num_comments.png" style="float: left; margin: 20px; height: 400px">
+A final piece of important information is the link that is included with the post. I extracted the domain name from this link (like Bloomberg, New york times, youtube, etc) and included this as a feature in the model. As it turns out, this feature adds a lot of predictive power because of the high level polarization in political media. As a fairly obvious example, articles from ultra-conservative site Breitbart are almost never posted on r/politics.
 
-As these distributions look different enough, I added num_comments as a feature to the model.
+### Comments
 
-A final piece of imortant
+For the comments, after some investigation I decided to use the score (number of upvotes vs downvotes), the word length of each comment, and whether the post was made by a frequent poster or not (more likely in r/conservative, where there are restrictions on who is allowed to post). Because there is a large variety of different words used in comments, the number of features will get very large after vectorizing. For that reason, I did some word frequency-related EDA:
+
+<p float="middles">
+  <img src="./figures/mono_cum_wl.png" width="500px"/>
+  <img src="./figures/bigram_cum_wl.png" width="500px"/>
+</p>
 
 
-## Overall Summary and Conclusions
-Using Pushshift API, I collected data from two different subreddits, r/politics and r/conservative, from the month leading up to the 2022 midterms (October 2022). I tested out different classification models in order to classify 1) the post titles, and 2) the comments of either subreddit. After data cleaning, I was left with about 19,000 post titles (53/47 split for r/conservative - r/politics, respectively), and 48,000 comments (47/53 split). 
+## Overall Conclusions
+Using Pushshift API, I collected data from two different subreddits, r/politics and r/conservative, from the month leading up to the 2022 midterms (October 2022). I tested out different classification models in order to classify 1) posts and 2) comments. After data cleaning, I was left with about 19,000 posts (53/47 split for r/conservative - r/politics, respectively), and 48,000 comments (47/53 split). 
 
-For the titles model, other than the title I included two additional pieces of information: the number of comments on each post, and the domain name that the post linked to. The final model that I used consists of a Stacking Classifier, using Logistic Regression, Random Forest, and Multinomial Naive Bayes as the base estimators. and a Logistic Regression as the final estimator. The final accuracy on the testing data is <b>88.1%</b>. Analysis of the feature importances indicates that the domain names are highly predictive and help improve the accuracy score a lot. This makes a lot of sense given the fact that the US political media system is highly polarized, and certain websites are only read by conservatives while others are highly avoided by conservatives, and vice versa.
+For the posts model, other than the title I included two additional pieces of information: the number of comments on each post, and the domain name that the post linked to. The final model that I used consists of a Stacking Classifier, using Logistic Regression, Random Forest, and Multinomial Naive Bayes as the base estimators. and a Logistic Regression as the final estimator. The final accuracy on the testing data is <b>88.1%</b>. Analysis of the feature importances indicates that the domain names are highly predictive and help improve the accuracy score a lot. This makes a lot of sense given the fact that the US political media system is highly polarized, and certain websites are only read by conservatives while others are highly avoided by conservatives, and vice versa.
 
-For the comments model, I included several other pieces of information: the score of the comment, the word length, whether the commenter is a frequent poster or not, and the sentiment of the comment (Negative/neutral/positive, using sentiment analysis with the roBERTa model). The best-performing model was again a Stacking classifier with the same estimator components as for the titles model. The final accuracy on the testing data is <b>65.4%</b>. Unlike with the titles model, it appears that none of the additional non-language features I added improve the accuracy by very much. One of the main reason for misclassification appears to be the fact that many comments are just too short for the model to be able to classify them with much certainty.
+For the comments model, I included several other pieces of information: the score of the comment, the word length, whether the commenter is a frequent poster or not, and the sentiment of the comment (Negative/neutral/positive, using sentiment analysis with the roBERTa model). The best-performing model was again a Stacking classifier with the same estimator components as for the posts model. The final accuracy on the testing data is <b>65.4%</b>. Unlike with the posts model, it appears that none of the additional non-language features I added improve the accuracy by very much. One of the main reason for misclassification appears to be the fact that many comments are just too short for the model to be able to classify them with much certainty.
 
 The base models that make up the Stacking Classifier allow us to look into which features add predictive power to the model, which means we can look at the language that is used and the degree to which this determines whether the post or comment comes from either subreddit. Although a full analysis of language use is beyond the scope of this project, using the visualizations in this notebook we can point to some directions that might warrant further exploration or analysis: 
 
@@ -98,3 +105,5 @@ The base models that make up the Stacking Classifier allow us to look into which
 3) <b>The pandemic</b>: it appears that on r/politics, COVID and the pandemic may not have been as important in the discourse as on r/conservative. On r/conservative, we can see terms like 'covid' and 'vaccine' as important features, but equivalents are not directly obvious on r/politics
 
 4) <b>The other side of the political aisle</b>: both side use certain terms to describe the other side. On r/conservative, we see highly predictive features such as 'left', 'leftists', while r/politics uses terms like 'right wing' and 'far right'.
+
+Ultimately, we were quite a bit more succesful in classifying posts compared to comments. This is largely due to the domain feature that is included with the posts model. 
