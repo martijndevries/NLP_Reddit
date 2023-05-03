@@ -108,7 +108,7 @@ The base estimators within the stacking classifier all have some degree of inter
 
 We also looked at which monograms and bigrams are the most predictive in convincing the classifier that the post/comment comes from one or the other subreddit. An example for the Naive Bayes classifier from the comments model is shown below:
 
- <img src="./figures/com_nb_features.png" width="800px"/>
+ <img src="./figures/com_nb_features.png" width="1200px"/>
 
 
 
