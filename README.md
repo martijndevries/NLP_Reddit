@@ -71,11 +71,15 @@ I used the Pushshift API, together with the Python library 'requests' to collect
 
 One thing that is obvious pretty quickly looking at the posts data is that more than 99% do not contain any useful information in the body (called the 'selftext'). These are often either empty, or removed. Because of this, I did not look at the selftexts and only focused on the title and some additional information for this model.
 
-Because the post titles are required to be the same as the article headline, and because the same article is sometimes posted multiple times, I removed duplicate titles within the same subreddit. I also removed titles that included subreddit names, like r/politics or r/conservative. Another issue I noticed is that some titles are in other languages or even in other scripts. I attempted to filter out these titles by attempting to convert titles to ASCII - this only works for a select number of characters, and so if the title contains eg. a Chinese symbol, then the ascii conversion throws an error. This appears to work reasonably well in filtering out titles in non-latin scripts or that contain symbols not native to English (like the Turkish ı). 
+Because the post titles are required to be the same as the article headline, and because the same article is sometimes posted multiple times, I removed duplicate titles within the same subreddit. I also removed titles that included subreddit names, like r/politics or r/conservative. Another issue I noticed is that some titles are in other languages or even in other scripts. I attempted to filter out these titles by attempting to convert titles to ASCII - this only works for a select number of characters, and so if the title contains eg. a Chinese symbol, then the ascii conversion throws an error. This appears to work reasonably well in filtering out titles in non-latin scripts or that contain symbols not native to English (like the Turkish dotless ı). 
 
 I also looked at how predictive other pieces of information might be for the model. The image below shows the comment distribution under each post for both subreddits:
 
 <img src="./figures/post_num_comments.png" style="float: left; margin: 20px; height: 400px">
+
+As these distributions look different enough, I added num_comments as a feature to the model.
+
+A final piece of imortant
 
 
 ## Overall Summary and Conclusions
