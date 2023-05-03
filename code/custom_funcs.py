@@ -34,6 +34,7 @@ class Tfidf_BigramReducer(BaseEstimator, TransformerMixin):
         """
         Constructs the 'bigram frequency' attribute, and creates a TfidfVectorizer object with all the hyperparameters passed through
         """
+        self.bf = bf
         
         #tfidf hyperpars
         self.max_df = max_df
