@@ -84,13 +84,14 @@ A final piece of important information is the link that is included with the pos
 For the comments, after some investigation I decided to use the score (number of upvotes vs downvotes), the word length of each comment, and whether the post was made by a frequent poster or not (more likely in r/conservative, where there are restrictions on who is allowed to post). Because there is a large variety of different words used in comments, the number of features will get very large after vectorizing. For that reason, I did some word frequency-related EDA:
 
 <p float="middles">
-  <img src="./figures/mono_cum_wl.png" width="500px"/>
-  <img src="./figures/bigram_cum_wl.png" width="500px"/>
+  <img src="./figures/mono_cum_wl.png" width="350px"/>
+  <img src="./figures/bigram_cum_wl.png" width="350px"/>
 </p>
 
+When just using monograms (single words), we can see that we could limit the maximum number of features by about 1/3rd, and only lose about 1% of all words in the corpus. Setting such a constraint could help combat overfitting. To retain some context of the words however, I would also like to include bigrams (sets of two words). As can be seen in the plots above, this greatly blows up the number of features, and we also lose the fact that many n-grams only appear a handful of times. This inspired me to write a custom sklearn transformer where we can tune how many bigrams we want to keep, while still keeping most of the monograms.
 
 ## Overall Conclusions
-Using Pushshift API, I collected data from two different subreddits, r/politics and r/conservative, from the month leading up to the 2022 midterms (October 2022). I tested out different classification models in order to classify 1) posts and 2) comments. After data cleaning, I was left with about 19,000 posts (53/47 split for r/conservative - r/politics, respectively), and 48,000 comments (47/53 split). 
+Using Pushshift API, I collected data from two different subreddits, r/politics and r/conservative, from the month leading up to the 2022 midterms (October 2022). I tested out different classification models in order to classify 1) posts and 2) comments. After data cleaning, I was left with about 19,000 posts (53/47 split for r/conservative - r/politics, respectively), and 48,000 comments (47/53 split). In order to model the language, we used a 'bag of words' approach with a TF-IDF (Term Frequency - Inverse Document Frequency) vectorizer.
 
 For the posts model, other than the title I included two additional pieces of information: the number of comments on each post, and the domain name that the post linked to. The final model that I used consists of a Stacking Classifier, using Logistic Regression, Random Forest, and Multinomial Naive Bayes as the base estimators. and a Logistic Regression as the final estimator. The final accuracy on the testing data is <b>88.1%</b>. Analysis of the feature importances indicates that the domain names are highly predictive and help improve the accuracy score a lot. This makes a lot of sense given the fact that the US political media system is highly polarized, and certain websites are only read by conservatives while others are highly avoided by conservatives, and vice versa.
 
