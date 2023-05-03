@@ -110,8 +110,11 @@ We also looked at which monograms and bigrams are the most predictive in convinc
 
  <img src="./figures/com_nb_features.png" width="900px"/>
 
+Because of the relatively poor performance of the comments model, we also spent some time evaluating what the main reason is that comments get misclassified. One important reason seems to be word length, as illustrated in the plot below:
 
+ <img src="./figures/wl_acc.png" width="500px"/>
 
+If we calculate the accuracy for only words above a certain length, the accuracy goes up - and vice versa for calculating the accuracy below a certain word length.  In other words, the longer the post the higher the probability that there is a feature in there that the model thinks significantly moves the needle towards one subreddit or the other.
 
 ## Overall Conclusions
 Using Pushshift API, I collected data from two different subreddits, r/politics and r/conservative, from the month leading up to the 2022 midterms (October 2022). I tested out different classification models in order to classify 1) posts and 2) comments. After data cleaning, I was left with about 19,000 posts (53/47 split for r/conservative - r/politics, respectively), and 48,000 comments (47/53 split). In order to model the language, we used a 'bag of words' approach with a TF-IDF (Term Frequency - Inverse Document Frequency) vectorizer.
