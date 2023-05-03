@@ -71,24 +71,30 @@ After filtering out duplicates, non-english posts, posts by bots or moderators e
 
 ### Posts
 
-In the posts data we obtained, more than 99% do not contain any useful information in the body (called the 'selftext'). These are often either empty, or removed. Because of this, I did not look at the selftexts and only focused on the title and some additional information for this model.
-
-I also looked at additional features beyond just the title. The image below shows the comment distribution under each post for both subreddits, which I ended up adding as a feature in the model:
-
-<img src="./figures/posts_num_comments.png" style="float: left; margin: 20px; height: 500px">
+In the posts data we obtained, more than 99% do not contain any useful information in the body (called the 'selftext'). Because of this, I did not look at the selftexts and only focused on the title and some additional information for this model. I also included the number of comments below each posts as a feature.
 
 A final piece of important information is the link that is included with the post. I extracted the domain name from this link (like Bloomberg, New york times, youtube, etc) and included this as a feature in the model. As it turns out, this feature adds a lot of predictive power because of the high level polarization in political media. As a fairly obvious example, articles from ultra-conservative site Breitbart are almost never posted on r/politics.
 
 ### Comments
 
-For the comments, after some investigation I decided to use the score (number of upvotes vs downvotes), the word length of each comment, and whether the post was made by a frequent poster or not (more likely in r/conservative, where there are restrictions on who is allowed to post). Because there is a large variety of different words used in comments, the number of features will get very large after vectorizing. For that reason, I did some word frequency-related EDA:
+For the comments, after some investigation I decided to use the score (number of upvotes vs downvotes), the word length of each comment, and whether the post was made by a frequent poster or not (more likely in r/conservative, where there are restrictions on who is allowed to post). Because there is a large variety of different words used in comments, the number of features will get very large after vectorizing. For that reason, I did some word frequency-related EDA. The plots below show the number of unique monograms (left), or monograms + bigrams  (right) and what is the fraction of the corpus they make up cumulatively:
 
 <p float="middles">
-  <img src="./figures/mono_cum_wl.png" width="350px"/>
-  <img src="./figures/bigram_cum_wl.png" width="350px"/>
+  <img src="./figures/mono_cum_wl.png" width="400px"/>
+  <img src="./figures/bigram_cum_wl.png" width="400px"/>
 </p>
 
-When just using monograms (single words), we can see that we could limit the maximum number of features by about 1/3rd, and only lose about 1% of all words in the corpus. Setting such a constraint could help combat overfitting. To retain some context of the words however, I would also like to include bigrams (sets of two words). As can be seen in the plots above, this greatly blows up the number of features, and we also lose the fact that many n-grams only appear a handful of times. This inspired me to write a custom sklearn transformer where we can tune how many bigrams we want to keep, while still keeping most of the monograms.
+When just using monograms (single words), we can see that we could limit the maximum number of features by about 1/3rd, and only lose about 1% of all words in the corpus. Setting such a constraint helps combat overfitting, at relatively little loss. To retain some context of the words however, I would also like to include bigrams (sets of two words). As can be seen in the plots above, this greatly blows up the number of features, and it also becomes more difficult to find a natural cutoff point to limit the number of features. This inspired me to write a custom sklearn transformer (Tfidf_BigramReducer) where we can tune how many bigrams we want to keep, while still keeping most of the monograms.
+
+## Modeling
+
+### Posts
+
+The best-performing model to classify posts is a Stacking Classifier, with a Logistic Regression, Random Forest, and Multinomial Naive Bayes as base estimators and a Logistic Regression as the final estimator. The sklearn diagram below shows the full diagram.
+
+ <img src="./figures/posts_model_sklearn_pipe.png" height="100px"/>
+
+## Model Insights
 
 ## Overall Conclusions
 Using Pushshift API, I collected data from two different subreddits, r/politics and r/conservative, from the month leading up to the 2022 midterms (October 2022). I tested out different classification models in order to classify 1) posts and 2) comments. After data cleaning, I was left with about 19,000 posts (53/47 split for r/conservative - r/politics, respectively), and 48,000 comments (47/53 split). In order to model the language, we used a 'bag of words' approach with a TF-IDF (Term Frequency - Inverse Document Frequency) vectorizer.
