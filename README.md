@@ -90,7 +90,7 @@ After cleaning, we're left with about 19,000 posts, with a 53/47 split between r
 
 ### Posts
 
-The best-performing classification model is a Stacking Classifier, with a Logistic Regression, Random Forest, and Multinomial Naive Bayes as base estimators and a Logistic Regression as the final estimator. The sklearn diagram below shows the full data pipeline: the comment text is vectorized with my custom transformer that wraps around TfidfVectorizer, the numerical features are scaled, and the categorical feature (the domain name) is one-hot encoded.
+Out of the models I tried, the best-performing classification model is a Stacking Classifier, with a Logistic Regression, Random Forest, and Multinomial Naive Bayes as base estimators and a Logistic Regression as the final estimator. The sklearn diagram below shows the full data pipeline: the comment text is vectorized with my custom transformer that wraps around TfidfVectorizer, the numerical features are scaled, and the categorical feature (the domain name) is one-hot encoded.
 
  <img src="./figures/posts_model_sklearn_pipe.png" height="180px"/>
  
@@ -106,18 +106,18 @@ The accuracy is <b>85.2%</b> on the training data, and <b>65.4%</b> on the testi
 
 The base estimators within the stacking classifier all have some degree of interpretability when it comes to the features inside the model. For the posts model, the 'domain' feature (which website is the article from), ended up being one of the most important one, and one of the main reasons of why the posts model performs with relatively high accuracy.
 
-We also looked at which monograms and bigrams are the most predictive in convincing the classifier that the post/comment comes from one or the other subreddit. An example for the Naive Bayes classifier from the comments model is shown below:
+I also looked at which monograms and bigrams are the most predictive in convincing the classifier that the post/comment comes from one or the other subreddit. An example for the Naive Bayes classifier from the comments model is shown below:
 
- <img src="./figures/com_nb_features.png" width="900px"/>
+ <img src="./figures/com_nb_features.png" style="float: center; margin: 50px; width: 500px"/>
 
 Because of the relatively poor performance of the comments model, we also spent some time evaluating what the main reason is that comments get misclassified. One important reason seems to be word length, as illustrated in the plot below:
 
  <img src="./figures/wl_acc.png" width="500px"/>
 
-If we calculate the accuracy for only words above a certain length, the accuracy goes up - and vice versa for calculating the accuracy below a certain word length.  In other words, the longer the post the higher the probability that there is a feature in there that the model thinks significantly moves the needle towards one subreddit or the other.
+If we calculate the accuracy for only comments above a certain length, the accuracy goes up - and vice versa for calculating the accuracy below a certain word length.  In other words, the longer the post the higher the probability that there is a feature in there that the model thinks significantly moves the needle towards one subreddit or the other.
 
 ## Overall Conclusions
-Using Pushshift API, I collected data from two different subreddits, r/politics and r/conservative, from the month leading up to the 2022 midterms (October 2022). I tested out different classification models in order to classify 1) posts and 2) comments. After data cleaning, I was left with about 19,000 posts (53/47 split for r/conservative - r/politics, respectively), and 48,000 comments (47/53 split). In order to model the language, we used a 'bag of words' approach with a TF-IDF (Term Frequency - Inverse Document Frequency) vectorizer.
+Using Pushshift API, I collected data from two different subreddits, r/politics and r/conservative, from the month leading up to the 2022 midterms (October 2022). I tested out different classification models in order to classify 1) posts and 2) comments. After data cleaning, I was left with about 19,000 posts (53/47 split for r/conservative - r/politics, respectively), and 48,000 comments (47/53 split). In order to model the language, I used a 'bag of words' approach with a TF-IDF (Term Frequency - Inverse Document Frequency) vectorizer.
 
 For the posts model, other than the title I included two additional pieces of information: the number of comments on each post, and the domain name that the post linked to. The final model that I used consists of a Stacking Classifier, using Logistic Regression, Random Forest, and Multinomial Naive Bayes as the base estimators. and a Logistic Regression as the final estimator. The final accuracy on the testing data is <b>88.1%</b>. Analysis of the feature importances indicates that the domain names are highly predictive and help improve the accuracy score a lot. This makes a lot of sense given the fact that the US political media system is highly polarized, and certain websites are only read by conservatives while others are highly avoided by conservatives, and vice versa.
 
