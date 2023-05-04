@@ -108,7 +108,7 @@ The base estimators within the stacking classifier all have some degree of inter
 
 I also looked at which monograms and bigrams are the most predictive in convincing the classifier that the post/comment comes from one or the other subreddit. An example for the Naive Bayes classifier from the comments model is shown below:
 
- <img src="./figures/com_nb_features.png" style="float: center; margin: 100px; width: 750px"/>
+ <img src="./figures/com_nb_features.png" style="float: center; margin: 100px; width: 600px"/>
 
 Because of the relatively poor performance of the comments model, we also spent some time evaluating what the main reason is that comments get misclassified. One important reason seems to be word length, as illustrated in the plot below:
 
