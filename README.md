@@ -94,7 +94,7 @@ Out of the models I tried, the best-performing classification model is a Stackin
 
  <img src="./figures/posts_model_sklearn_pipe.png" height="180px"/>
  
-The accuracy is <b>99.0%</b> on the training data, and <b>88.1%</b> on the testing data.
+The accuracy is <b>99.1%</b> on the training data, and <b>88.6%</b> on the testing data.
 
 ### Comments
 
