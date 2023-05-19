@@ -1,4 +1,4 @@
-# Project 3 - Web APIs and Natural Language Processing with Reddit
+# Classifying Reddit posts and comments using Natural Language Processing
 
 by Martijn de Vries </br>
 martijndevries91@gmail.com
@@ -29,7 +29,6 @@ This repository consists of the following:
   <li> The directory <code>./data</code> contains dataframes with the collected data from reddit for both post titles and comments, as well as cleaned versions of these dataframes. Additionally, for the comments data there is an extra .csv file which appends the sentiment analysis features to the cleaned comments dataframe.
     <li> The directory <code>./pickled_models/</code> is to save the pickled model objects that are saved in the NLP and modeling notebook. These were not uploaded to the remote repository for storage space reasons, so they will have to be recreated in the notebook.
    <li> The directory <code>./figures</code> contains all the figures that are saved during the analysis in the notebooks, in .png formats </li>
-    <li> The slides for the project presentation are in the file <code>project3_martijn_slides.pdf</code> </li>
 </ul>
 
 ## Subreddits Overview:
