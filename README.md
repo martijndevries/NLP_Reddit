@@ -11,6 +11,20 @@ For this project, we will build two separate branches of models: one for post su
 
 Because political news is always evolving, we have chosen a specific moment in time: the month leading up to the 2022 midterms, October 6th to November 6th 2022. This ensures that 1) the same news cycle is covered for both subreddits, 2) both subreddits were at peak activity, and 3) maximum potential for interesting insights in the way that news is discussed within these two subreddits.
 
+## Software Requirements
+
+This project uses the following Python Libraries
+<ul>
+    <li> Numpy </li>
+    <li> Pandas </li>
+    <li> Matplotlib </li>
+    <li> Seaborn </li>
+    <li> Emoji (<b>Note:</b> I specifically needed to install emoji version 1.7) </li>
+    <li> NLTK (Natural Language Toolkit) </li>
+    <li> Transformers </li>
+    <li> Scikit-Learn </li>
+</ul>
+
 ## Repository Overview
     
 This repository consists of the following:
